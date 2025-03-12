@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Interactivo de Nicaragua</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0d0d0d;
+            color: #fff;
+        }
+
+        .futuristic-background {
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: 400% 400%;
+            animation: gradient 10s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .register-form {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            width: 300px;
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 2px solid #4CAF50;
+            background-color: #333;
+            color: #fff;
+        }
+
+        button {
+            padding: 15px;
+            width: 100%;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        #map {
+            width: 100%;
+            height: 500px;
+            max-width: 1000px;
+            margin: 20px auto;
+            border: 2px solid #000;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .loading {
+            color: yellow;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Registro -->
+    <div id="register-screen" class="futuristic-background">
+        <h1>Bienvenido</h1>
+        <div class="register-form">
+            <h2>Regístrate para continuar</h2>
+            <form id="registration-form">
+                <input type="text" id="name" placeholder="Nombre Completo" required>
+                <input type="email" id="email" placeholder="Correo Electrónico" required>
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="submit">Registrar y Continuar</button>
+            </form>
+            <div id="error-message" class="error"></div>
+        </div>
+    </div>
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Verificar si el usuario ya está registrado en el localStorage
+        if (localStorage.getItem('userRegistered')) {
+            loadMap();
+        } else {
+            document.getElementById("register-screen").style.display = 'block';
+            document.getElementById("map").style.display = 'none';
+        }
+
+        // Función para cargar el mapa
+        function loadMap() {
+            document.getElementById("register-screen").style.display = 'none';
+            document.getElementById("map").style.display = 'block';
+
+            var map = L.map('map').setView([12.8654, -85.2072], 7); // Centro de Nicaragua
+
+            // Usamos el mapa original de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            // Agregar los marcadores de las paradas (como ejemplo)
+            var locations = [
+            L.marker([12.1455, -86.1713]).addTo(map)
+            .bindPopup("<b>Parada 2</b><br>Ubicación 2"),
+      
+            L.marker([12.1452, -86.1712]).addTo(map)
+            .bindPopup("<b>Parada 3</b><br>Ubicación 3"),
+      
+            L.marker([12.1485, -86.2002]).addTo(map)
+            .bindPopup("<b>Parada 4</b><br>Ubicación 4"),
+      
+            L.marker([12.1514, -86.2360]).addTo(map)
+            .bindPopup("<b>Parada 6</b><br>Ubicación 6"),
+      
+            L.marker([12.1478, -86.1931]).addTo(map)
+            .bindPopup("<b>Parada 5</b><br>Ubicación 5"),
+      
+            L.marker([12.1485, -86.2002]).addTo(map)
+            .bindPopup("<b>Parada 7</b><br>Ubicación 7"),
+      
+            L.marker([12.1489, -86.1582]).addTo(map)
+            .bindPopup("<b>Parada 1</b><br>Ubicación 1"),
+      
+            L.marker([12.1482, -86.1998]).addTo(map)
+            .bindPopup("<b>Parada 8</b><br>Ubicación 8"),
+      
+            L.marker([12.1487, -86.2026]).addTo(map)
+            .bindPopup("<b>Parada 9</b><br>Ubicación 9"),
+      
+            L.marker([12.1485, -86.2031]).addTo(map)
+            .bindPopup("<b>Parada 10</b><br>Ubicación 10"),
+      
+      
+            L.marker([12.1518, -86.2361]).addTo(map)
+            .bindPopup("<b>Parada 12</b><br>Ubicación 12"),
+      
+            L.marker([12.1489, -86.2083]).addTo(map)
+            .bindPopup("<b>Parada 13</b><br>Ubicación 13"),
+      
+            L.marker([12.1518, -86.2361]).addTo(map)
+            .bindPopup("<b>Parada 14</b><br>Ubicación 14"),
+      
+            L.marker([12.1521, -86.2434]).addTo(map)
+            .bindPopup("<b>Parada 15</b><br>Ubicación 15"),
+      
+            L.marker([12.1524, -86.2431]).addTo(map)
+            .bindPopup("<b>Parada 16</b><br>Ubicación 16"),
+      
+      
+             L.marker([12.1523, -86.2459]).addTo(map)
+            .bindPopup("<b>Parada 17</b><br>Ubicación 17"),
+      
+            L.marker([12.1530, -86.2495]).addTo(map)
+            .bindPopup("<b>Parada 18</b><br>Ubicación 18"),
+      
+            L.marker([12.1527, -86.2501]).addTo(map)
+            .bindPopup("<b>Parada 18</b><br>Ubicación 19"),
+      
+            L.marker([12.1488, -86.1579]).addTo(map)
+            .bindPopup("<b>Parada 20</b><br>Ubicación 20"),
+      
+            L.marker([12.1534, -86.2574]).addTo(map)
+            .bindPopup("<b>Parada 21</b><br>Ubicación 21"),
+      
+            L.marker([12.1497, -86.2175]).addTo(map)
+            .bindPopup("<b>Parada 22</b><br>Ubicación 22"),
+      
+            L.marker([12.1504, -86.2251]).addTo(map)
+            .bindPopup("<b>Parada 23</b><br>Ubicación 23"),
+      
+            L.marker([12.1268, -86.2715]).addTo(map)
+            .bindPopup("<b>Parada 24</b><br>Ubicación 24"),
+      
+            L.marker([12.1268, -86.2715]).addTo(map)
+            .bindPopup("<b>Parada 25</b><br>Ubicación 25"),
+      
+      
+            L.marker([12.1265, -86.2714]).addTo(map)
+            .bindPopup("<b>Parada 26</b><br>Ubicación 26"),
+      
+            L.marker([12.1285, -86.2678]).addTo(map)
+            .bindPopup("<b>Parada 27</b><br>Ubicación 27"),
+      
+      
+            L.marker([12.1283, -86.2677]).addTo(map)
+            .bindPopup("<b>Parada 28</b><br>Ubicación 28"),
+      
+      
+            L.marker([12.1296, -86.2651]).addTo(map)
+            .bindPopup("<b>Parada 29</b><br>Ubicación 29"), 
+      
+            L.marker([12.1312, -86.2610]).addTo(map)
+            .bindPopup("<b>Parada 31</b><br>Ubicación 31"),
+      
+            L.marker([12.1310, -86.2606]).addTo(map)
+            .bindPopup("<b>Parada 32</b><br>Ubicación 32"),
+      
+            L.marker([12.1343, -86.2552]).addTo(map)
+            .bindPopup("<b>Parada 33</b><br>Ubicación 33"), 
+      
+            L.marker([12.1346, -86.2554]).addTo(map)
+            .bindPopup("<b>Parada 34</b><br>Ubicación 34"), 
+      
+            L.marker([12.1381, -86.2498]).addTo(map)
+            .bindPopup("<b>Parada 35</b><br>Ubicación 35"), 
+      
+            L.marker([12.1377, -86.2500]).addTo(map)
+            .bindPopup("<b>Parada 36</b><br>Ubicación 36"), 
+      
+            L.marker([12.1395, -86.2456]).addTo(map)
+            .bindPopup("<b>Parada 37</b><br>Ubicación 37"),
+            
+            L.marker([12.1397, -86.2454]).addTo(map)
+            .bindPopup("<b>Parada 38</b><br>Ubicación 38"), 
+      
+            L.marker([12.1423, -86.2419]).addTo(map)
+            .bindPopup("<b>Parada 39</b><br>Ubicación 39"), 
+      
+            L.marker([12.1425, -86.2420]).addTo(map)
+            .bindPopup("<b>Parada 40</b><br>Ubicación 40"), 
+      
+      
+            L.marker([12.1470, -86.2412]).addTo(map)
+            .bindPopup("<b>Parada 41</b><br>Ubicación 41"),
+      
+            L.marker([12.1472, -86.2410]).addTo(map)
+            .bindPopup("<b>Parada 42</b><br>Ubicación 42"), 
+      
+            L.marker([12.1500, -86.2396]).addTo(map)
+            .bindPopup("<b>Parada 43</b><br>Ubicación 43"), 
+      
+            L.marker([12.1503, -86.2394]).addTo(map)
+            .bindPopup("<b>Parada 44</b><br>Ubicación 44"), 
+      
+            L.marker([12.1468, -86.1829]).addTo(map)
+            .bindPopup("<b>Parada 45</b><br>Ubicación 45"), 
+      
+            L.marker([12.1466, -86.1830]).addTo(map)
+            .bindPopup("<b>Parada 46</b><br>Ubicación 46"), 
+      
+            L.marker([12.1475, -86.1900]).addTo(map)
+            .bindPopup("<b>Parada 47</b><br>Ubicación 47"), 
+      
+            L.marker([12.1532, -86.2576]).addTo(map)
+            .bindPopup("<b>Parada 48</b><br>Ubicación 48"), 
+      
+            L.marker([12.1522, -86.2461]).addTo(map)
+            .bindPopup("<b>Parada 49</b><br>Ubicación 49"), 
+            
+            L.marker([12.1551, -86.1448]).addTo(map)
+            .bindPopup("<b>Parada 50</b><br>Ubicación 50"), 
+      
+            L.marker([12.1545, -86.1457]).addTo(map)
+            .bindPopup("<b>Parada 51</b><br>Ubicación 51"), 
+      
+      
+            L.marker([12.1560, -86.1428]).addTo(map)
+            .bindPopup("<b>Parada 52</b><br>Ubicación 52"), 
+      
+            L.marker([12.1562, -86.1420]).addTo(map)
+            .bindPopup("<b>Parada 53</b><br>Ubicación 53"), 
+      
+            L.marker([12.1513, -86.1525]).addTo(map)
+            .bindPopup("<b>Parada 54</b><br>Ubicación 54"),
+      
+            L.marker([12.1505, -86.1547]).addTo(map)
+            .bindPopup("<b>Parada 54</b><br>Ubicación 55"), 
+      
+            L.marker([12.1503, -86.1546]).addTo(map)
+            .bindPopup("<b>Parada 57</b><br>Ubicación 56"), 
+      
+            L.marker([12.1470, -86.1622]).addTo(map)
+            .bindPopup("<b>Parada 57</b><br>Ubicación 57"), 
+      
+            L.marker([12.1468, -86.1621]).addTo(map)
+            .bindPopup("<b>Parada 58</b><br>Ubicación 58"), 
+      
+            L.marker([12.1475, -86.1930]).addTo(map)
+            .bindPopup("<b>Parada 59</b><br>Ubicación 59"), 
+      
+            L.marker([12.1472, -86.1901]).addTo(map)
+            .bindPopup("<b>Parada 60</b><br>Ubicación 60"), 
+
+            L.marker([12.1509, -86.2260]).addTo(map)
+            .bindPopup("<b>Parada 61</b><br>Ubicación 61"), 
+
+            L.marker([12.1501, -86.2174]).addTo(map)
+            .bindPopup("<b>Parada 62</b><br>Ubicación 62"), 
+
+            L.marker([12.1489, -86.2084]).addTo(map)
+            .bindPopup("<b>Parada 63</b><br>Ubicación 63"), 
+
+            L.marker([12.1472, -86.1901]).addTo(map)
+            .bindPopup("<b>Parada 64</b><br>Ubicación 64"), 
+
+
+
+
+                      // Agrega el resto de las ubicaciones aquí
+            ];
+
+            locations.forEach(function(location) {
+                L.marker([location.lat, location.lng]).addTo(map)
+                    .bindPopup("<b>" + location.popup + "</b><br>Ubicación");
+            });
+
+            // Aquí actualizamos la ubicación en tiempo real
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(function(position) {
+                    var userLat = position.coords.latitude;
+                    var userLng = position.coords.longitude;
+
+                    // Guardamos la ubicación del usuario en localStorage
+                    localStorage.setItem('userLocation', JSON.stringify({ lat: userLat, lng: userLng }));
+
+                    // Limpiar marcador anterior si existe
+                    if (window.userMarker) {
+                        map.removeLayer(window.userMarker);
+                    }
+
+                    // Agregar marcador rojo para la ubicación del usuario
+                    window.userMarker = L.marker([userLat, userLng], {
+                        icon: L.icon({
+                            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Red_dot.svg/2048px-Red_dot.svg.png',
+                            iconSize: [25, 25]
+                        })
+                    }).addTo(map)
+                    .bindPopup("<b>Tu Ubicación</b><br>Estás aquí");
+
+                    // Centrar el mapa en la ubicación del usuario
+                    map.setView([userLat, userLng], 14);
+                }, function(error) {
+                    alert("No se pudo obtener tu ubicación. Por favor, habilita la geolocalización.");
+                });
+            }
+
+            // Verificar si el usuario ya ha visitado el mapa
+            if (localStorage.getItem('userLocation')) {
+                var storedLocation = JSON.parse(localStorage.getItem('userLocation'));
+                // Mostrar marcador rojo en el mapa
+                window.userMarker = L.marker([storedLocation.lat, storedLocation.lng], {
+                    icon: L.icon({
+                        iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Red_dot.svg/2048px-Red_dot.svg.png',
+                        iconSize: [25, 25]
+                    })
+                }).addTo(map)
+                .bindPopup("<b>Tu Ubicación</b><br>Estás aquí");
+                map.setView([storedLocation.lat, storedLocation.lng], 14);
+            }
+        }
+
+        // Función para registrar al usuario y guardar los datos
+        document.getElementById("registration-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evitar que el formulario se envíe de forma predeterminada
+
+            // Obtener los valores del formulario
+            var name = document.getElementById("name").value;
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+
+            if (name && email && password) {
+                // Guardamos el registro del usuario en localStorage
+                localStorage.setItem('userRegistered', true);
+                localStorage.setItem('userName', name);
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userPassword', password);
+
+                // Llamar a la función para cargar el mapa después del registro
+                loadMap();
+            } else {
+                document.getElementById("error-message").innerText = "Por favor, completa todos los campos.";
+            }
+        });
+    </script>
+</body>
+</html>
