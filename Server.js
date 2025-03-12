@@ -15,6 +15,18 @@ http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(data);
         });
+    } else if (req.method === 'GET' && req.url === '/data') {
+        // Leer el archivo data.json
+        fs.readFile(path.join(__dirname, 'data.json'), 'utf-8', (err, data) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'Error al leer el archivo data.json' }));
+                return;
+            }
+            // Si no hay errores, devolver el contenido del archivo data.json
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(data);
+        });
     } else if (req.method === 'POST' && req.url === '/submit') {
         // Recibir los datos del formulario
         let body = '';
