@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo de Nicaragua</title>
+    <title>Mapa Interactivo De las Paradas En Managua</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
@@ -102,15 +102,37 @@
             margin-top: 50px;
         }
 
+        .user-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .user-info button {
+            background-color: #f44336;
+        }
+
+        .save-parada-button {
+            margin-top: 20px;
+            background-color: #ff9800;
+        }
+
+        #notification {
+            background-color: #ff9800;
+            padding: 10px;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <!-- Pantalla de Registro -->
     <div id="register-screen" class="futuristic-background">
-        <h1>Bienvenido</h1>
+        <h1>Bienvenido a TranSitMAP Live</h1>
         <div class="register-form">
-            <h2>Regístrate para continuar</h2>
+            <h2>Regístrate Para Poder Continuar</h2>
             <form id="registration-form">
                 <input type="text" id="name" placeholder="Nombre Completo" required>
                 <input type="email" id="email" placeholder="Correo Electrónico" required>
@@ -123,6 +145,17 @@
 
     <!-- Mapa -->
     <div id="map"></div>
+
+    <div id="user-info" class="user-info" style="display:none;">
+        <h2>Bienvenido, <span id="user-name"></span></h2>
+        <button onclick="logOut()">Cerrar Sesión</button>
+        <button class="save-parada-button" onclick="saveFavoriteStop()">Guardar Parada Favorita</button>
+    </div>
+
+    <div id="notification">
+        <p>¡Recuerda revisar las paradas de buses!</p>
+        <button onclick="dismissNotification()">Desactivar Notificación</button>
+    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -138,6 +171,10 @@
         function loadMap() {
             document.getElementById("register-screen").style.display = 'none';
             document.getElementById("map").style.display = 'block';
+            document.getElementById("user-info").style.display = 'block';
+
+            // Mostrar nombre de usuario
+            document.getElementById("user-name").innerText = localStorage.getItem('userName');
 
             var map = L.map('map').setView([12.8654, -85.2072], 7); // Centro de Nicaragua
 
@@ -182,7 +219,7 @@
             L.marker([12.1518, -86.2361]).addTo(map)
             .bindPopup("<b>Parada 12</b><br>Ubicación 12"),
       
-            L.marker([12.1489, -86.2083]).addTo(map)
+            L.marker([12.1493, -86.2083]).addTo(map)
             .bindPopup("<b>Parada 13</b><br>Ubicación 13"),
       
             L.marker([12.1518, -86.2361]).addTo(map)
@@ -340,11 +377,7 @@
 
             L.marker([12.1472, -86.1901]).addTo(map)
             .bindPopup("<b>Parada 64</b><br>Ubicación 64"), 
-
-
-
-
-                      // Agrega el resto de las ubicaciones aquí
+                // ...otros marcadores
             ];
 
             locations.forEach(function(location) {
@@ -352,21 +385,30 @@
                     .bindPopup("<b>" + location.popup + "</b><br>Ubicación");
             });
 
-            // Aquí actualizamos la ubicación en tiempo real
+            // Función para guardar la parada favorita
+            function saveFavoriteStop() {
+                var favoriteStop = prompt("Por favor, ingrese la parada favorita (nombre):");
+                if (favoriteStop) {
+                    alert("¡Parada guardada como favorita!");
+                    localStorage.setItem("favoriteStop", favoriteStop);
+                    // Mostrar la parada favorita en un color llamativo
+                    L.marker([12.1455, -86.1713], {
+                        icon: L.icon({
+                            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Red_dot.svg/2048px-Red_dot.svg.png',
+                            iconSize: [30, 30]
+                        })
+                    }).addTo(map).bindPopup("<b>" + favoriteStop + "</b><br>Parada Favorita");
+                }
+            }
+
+            // Agregar marcador con la ubicación del usuario
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(function(position) {
                     var userLat = position.coords.latitude;
                     var userLng = position.coords.longitude;
-
-                    // Guardamos la ubicación del usuario en localStorage
-                    localStorage.setItem('userLocation', JSON.stringify({ lat: userLat, lng: userLng }));
-
-                    // Limpiar marcador anterior si existe
                     if (window.userMarker) {
                         map.removeLayer(window.userMarker);
                     }
-
-                    // Agregar marcador rojo para la ubicación del usuario
                     window.userMarker = L.marker([userLat, userLng], {
                         icon: L.icon({
                             iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Red_dot.svg/2048px-Red_dot.svg.png',
@@ -374,27 +416,38 @@
                         })
                     }).addTo(map)
                     .bindPopup("<b>Tu Ubicación</b><br>Estás aquí");
-
-                    // Centrar el mapa en la ubicación del usuario
                     map.setView([userLat, userLng], 14);
                 }, function(error) {
                     alert("No se pudo obtener tu ubicación. Por favor, habilita la geolocalización.");
                 });
             }
 
-            // Verificar si el usuario ya ha visitado el mapa
-            if (localStorage.getItem('userLocation')) {
-                var storedLocation = JSON.parse(localStorage.getItem('userLocation'));
-                // Mostrar marcador rojo en el mapa
-                window.userMarker = L.marker([storedLocation.lat, storedLocation.lng], {
-                    icon: L.icon({
-                        iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Red_dot.svg/2048px-Red_dot.svg.png',
-                        iconSize: [25, 25]
-                    })
-                }).addTo(map)
-                .bindPopup("<b>Tu Ubicación</b><br>Estás aquí");
-                map.setView([storedLocation.lat, storedLocation.lng], 14);
+            // Notificación cada hora
+            if (!localStorage.getItem('notificationDisabled')) {
+                setInterval(showNotification, 3600000); // 1 hora en milisegundos
             }
+        }
+
+        // Función para cerrar sesión
+        function logOut() {
+            localStorage.removeItem('userRegistered');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userPassword');
+            localStorage.removeItem('favoriteStop');
+            localStorage.removeItem('notificationDisabled');
+            window.location.reload(); // Recarga la página
+        }
+
+        // Función para mostrar la notificación
+        function showNotification() {
+            document.getElementById("notification").style.display = 'block';
+        }
+
+        // Función para desactivar la notificación
+        function dismissNotification() {
+            localStorage.setItem('notificationDisabled', 'true');
+            document.getElementById("notification").style.display = 'none';
         }
 
         // Función para registrar al usuario y guardar los datos
@@ -407,6 +460,19 @@
             var password = document.getElementById("password").value;
 
             if (name && email && password) {
+                // Verificar si el nombre o el correo ya están registrados
+                var existingUser = localStorage.getItem('userEmail');
+                if (existingUser && existingUser === email) {
+                    document.getElementById("error-message").innerText = "Este correo ya está registrado. Por favor, ingresa uno diferente.";
+                    return;
+                }
+
+                var existingName = localStorage.getItem('userName');
+                if (existingName && existingName === name) {
+                    document.getElementById("error-message").innerText = "Este nombre de usuario ya está registrado. Por favor, ingresa otro.";
+                    return;
+                }
+
                 // Guardamos el registro del usuario en localStorage
                 localStorage.setItem('userRegistered', true);
                 localStorage.setItem('userName', name);
